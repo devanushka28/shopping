@@ -136,6 +136,9 @@ const cartTotalEl = document.getElementById("cart-total");
 const cartCountEl = document.getElementById("cart-count");
 const cartIcon = document.getElementById("cart-icon");
 const searchBox = document.getElementById("search-box");
+const searchWrapper = document.querySelector(".search-wrapper");
+const searchSuggestions = document.getElementById("search-suggestions");
+const searchBtn = document.querySelector(".search-btn");
 const themeToggleBtn = document.getElementById("theme-toggle");
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.getElementById("nav-links");
@@ -237,13 +240,17 @@ categoryRow.addEventListener("click", (event) => {
 });
 
 /* =====================================================
-   3. SEARCH + CATEGORY FILTERING (extra feature)
+   3. SEARCH + LIVE SUGGESTIONS + CATEGORY FILTERING (extra feature)
    ===================================================== */
 function applyFilters() {
   const searchTerm = searchBox.value.toLowerCase().trim();
 
   const filtered = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm);
+    // Search matches the name, description, or category - not just the name
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchTerm) ||
+      product.desc.toLowerCase().includes(searchTerm) ||
+      product.category.toLowerCase().includes(searchTerm);
     const matchesCategory = !activeCategory || product.category === activeCategory;
     return matchesSearch && matchesCategory;
   });
@@ -251,10 +258,82 @@ function applyFilters() {
   displayProducts(filtered);
 }
 
-searchBox.addEventListener("input", applyFilters);
+// Builds and shows the dropdown of matching products below the search box
+function renderSuggestions() {
+  const searchTerm = searchBox.value.toLowerCase().trim();
+
+  if (!searchTerm) {
+    searchSuggestions.classList.remove("show");
+    searchSuggestions.innerHTML = "";
+    return;
+  }
+
+  const matches = products
+    .filter((product) => product.name.toLowerCase().includes(searchTerm))
+    .slice(0, 5); // only show the first 5 matches
+
+  if (matches.length === 0) {
+    searchSuggestions.innerHTML = `<p class="suggestion-empty">No products found for "${searchBox.value}"</p>`;
+  } else {
+    searchSuggestions.innerHTML = matches
+      .map(
+        (product) => `
+          <button type="button" class="suggestion-item" data-id="${product.id}">
+            <img src="${product.image}" alt="${product.name}" />
+            <span class="suggestion-name">${product.name}</span>
+            <span class="suggestion-price">₹${product.price}</span>
+          </button>
+        `
+      )
+      .join("");
+  }
+
+  searchSuggestions.classList.add("show");
+}
+
+// Applies the filter, closes the dropdown, and scrolls to the results
+function submitSearch() {
+  applyFilters();
+  searchSuggestions.classList.remove("show");
+  document.getElementById("products").scrollIntoView({ behavior: "smooth" });
+}
+
+searchBox.addEventListener("input", () => {
+  applyFilters();
+  renderSuggestions();
+});
+
+// Show suggestions again if the user refocuses a non-empty search box
+searchBox.addEventListener("focus", () => {
+  if (searchBox.value.trim()) renderSuggestions();
+});
+
+searchBox.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") submitSearch();
+  if (event.key === "Escape") searchSuggestions.classList.remove("show");
+});
+
+searchBtn.addEventListener("click", submitSearch);
+
+// Clicking a suggestion fills the search box with that product and jumps to it
+searchSuggestions.addEventListener("click", (event) => {
+  const item = event.target.closest(".suggestion-item");
+  if (!item) return;
+
+  const product = products.find((p) => p.id === Number(item.dataset.id));
+  searchBox.value = product.name;
+  submitSearch();
+});
+
+// Close the dropdown when clicking anywhere outside the search bar
+document.addEventListener("click", (event) => {
+  if (!searchWrapper.contains(event.target)) {
+    searchSuggestions.classList.remove("show");
+  }
+});
 
 /* =====================================================
-   3. ADD TO CART BUTTON CLICKS (using event delegation)
+   4. ADD TO CART BUTTON CLICKS (using event delegation)
    ===================================================== */
 productGrid.addEventListener("click", (event) => {
   // Only run this code if an "Add to Cart" button was clicked
