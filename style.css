@@ -167,15 +167,85 @@ ul {
 .logo-mark span:nth-child(3) { background: var(--accent-color); }
 
 /* Prominent search bar in the middle of the navbar */
-.search-bar {
+.search-wrapper {
+  position: relative;
   flex: 1;
   max-width: 420px;
+}
+
+.search-bar {
   display: flex;
   align-items: center;
   background: var(--bg-color);
   border: 1px solid rgba(17, 24, 39, 0.08);
   border-radius: 30px;
   padding: 4px 4px 4px 18px;
+}
+
+/* Dropdown of live matching products while typing */
+.search-suggestions {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border: 1px solid rgba(17, 24, 39, 0.06);
+  border-radius: 14px;
+  box-shadow: 0 12px 30px var(--shadow-color);
+  overflow: hidden;
+  z-index: 1100;
+}
+
+.search-suggestions.show {
+  display: block;
+}
+
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  color: var(--text-color);
+  transition: background 0.2s ease;
+}
+
+.suggestion-item:hover,
+.suggestion-item.highlighted {
+  background: var(--bg-color);
+}
+
+.suggestion-item img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.suggestion-name {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.suggestion-price {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.suggestion-empty {
+  padding: 14px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  text-align: center;
 }
 
 .search-bar input {
@@ -1121,7 +1191,7 @@ ul {
     display: flex;
   }
 
-  .search-bar {
+  .search-wrapper {
     order: 3;
     flex-basis: 100%;
     max-width: 100%;
